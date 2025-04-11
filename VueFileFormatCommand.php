@@ -71,7 +71,7 @@ class VueFileFormatCommand extends Command
                     $response = 'n';
                 }
             }else{
-                $response = 'n';
+                $response = 'y';
             }
             if($response == 'n'){
                 $this->info('Skipping file: ' . $file);
