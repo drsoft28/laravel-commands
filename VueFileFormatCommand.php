@@ -55,22 +55,18 @@ class VueFileFormatCommand extends Command
     
         $dir = new \RecursiveDirectoryIterator($folder);
         $iterator = new \RecursiveIteratorIterator($dir);
-        $files = [];
+        $skippedAll = false;
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() == 'vue') {
-                $files[] = $file->getPathname();
-            }
-        }
-      
-        $skippedAll = false;
-        foreach ($files as $file) {
-          
-            if(!$skippedAll && $ask == 'true'){
+                $file = $file->getPathname();
+                 
+            if( $ask == 'true'){
                 $this->info('Processing file: ' . $file);
                 // yes or no or skip all
                 $response = $this->choice('Do you want to format this file?', ['y'=>'yes', 'n'=>'no','s'=> 'skip all'], 0);
                 //$response = $this->confirm('Do you want to format this file?');
                 if($response == 's'){
+                    break;
                     $skippedAll = true;
                     $response = 'n';
                 }
@@ -83,8 +79,9 @@ class VueFileFormatCommand extends Command
             }
             
                 $this->formattingFile($format,$file);
-              
+            }
         }
+    
         $this->info('Files formatted successfully');
         
     }
