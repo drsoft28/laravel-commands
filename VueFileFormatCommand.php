@@ -11,7 +11,7 @@ class VueFileFormatCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'vue:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--ask : ask before updating the file}';
+    protected $signature = 'vue:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--test : for run test function} {--ask : ask before updating the file}';
     
    
     /**
@@ -31,9 +31,13 @@ class VueFileFormatCommand extends Command
         // get the format argument
         $format = $this->argument('format');
         $ask = $this->option('ask');
+        $test = $this->option('test');
         $this->info('Format: ' . $format);
         $this->info('Ask: ' . $ask);
-     
+        if($test){
+            $this->test($format);
+            return;
+        }
         // check if the format is valid
         // check if the format is 3 characters long
         // check if the format is s,t,l
@@ -46,7 +50,7 @@ class VueFileFormatCommand extends Command
             $this->error('Invalid format');
             return;
         }
-        $folder = base_path('resources/js/');
+        $folder = base_path('resources/js/Components/ui/'); // specify the folder to search for vue files
         // get all files in the folder and subfolders
     
         $dir = new \RecursiveDirectoryIterator($folder);
@@ -84,18 +88,63 @@ class VueFileFormatCommand extends Command
         $this->info('Files formatted successfully');
         
     }
-
+    protected function test($format){
+        $file = base_path('resources/js/Components/ui/sidebar/SidebarMenuButton.vue');
+        $this->formattingFile($format,$file);
+        $this->info('File formatted successfully');
+    }
+    function extractRootTemplate($content) {
+        $templateStart = strpos($content, '<template');
+        if ($templateStart === false) return '';
+        
+        $templateEnd = null;
+        $depth = 0;
+        $length = strlen($content);
+        $i = $templateStart;
+        
+        while ($i < $length) {
+            if (substr($content, $i, 9) === '<template') {
+                $depth++;
+                $i += 9;
+            } elseif (substr($content, $i, 10) === '</template') {
+                $depth--;
+                $i += 10;
+                if ($depth === 0) {
+                    $templateEnd = strpos($content, '>', $i) + 1;
+                    break;
+                }
+            } else {
+                $i++;
+            }
+        }
+        
+        if ($templateEnd === null) return null;
+        
+        $templateTag = substr($content, $templateStart, $templateEnd - $templateStart);
+        $templateContent = substr($templateTag, strpos($templateTag, '>') + 1);
+        $templateContent = substr($templateContent, 0, strrpos($templateContent, '<'));
+        
+        return trim($templateContent);
+    }
+    
+    
     protected function formattingFile($format,$file){
-        {
+        
             $this->info('Processing file: ' . $file);
             $content = file_get_contents($file);
             $script = '';
             $template = '';
             $style = '';
-            preg_match('/<template>(.*?)<\/template>/s', $content, $matches);
+            // I found issue when <template> tag has template tag inside it
+            // so I need to use regex to get the content of the root template tag
+
+            // get the content of the template tag
+         
+            /*preg_match('/<template>(.*?)<\/template>/s', $content, $matches);
             if (isset($matches[1])) {
                 $template = $matches[1];
-            }
+            }*/
+            $template = $this->extractRootTemplate($content);
             preg_match_all('/<script(.*?)>(.*?)<\/script>/s', $content, $matches);
             if (isset($matches[0])) {
                 foreach ($matches[0] as $match) {
@@ -127,7 +176,7 @@ class VueFileFormatCommand extends Command
                 if ($char == 's') {
                     $content .= $script;
                 } elseif ($char == 't') {
-                    $content .= "<template>$template</template>";
+                    $content .= "<template>\n$template\n</template>";
                 } elseif ($char == 'l') {
                     $content .= $style;
                 }
@@ -136,6 +185,6 @@ class VueFileFormatCommand extends Command
           
                 file_put_contents($file, $content);
                
-        }
+        
     }
 }
