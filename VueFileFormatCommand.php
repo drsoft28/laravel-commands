@@ -11,7 +11,7 @@ class VueFileFormatCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'vue:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--test : for run test function} {--ask : ask before updating the file}';
+    protected $signature = 'vue:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--test : for run test function} {folder? : the folder to search for vue files ,empty means start in root folder,resources/js/ is root folder} {--ask : ask before updating the file}';
     
    
     /**
@@ -30,6 +30,20 @@ class VueFileFormatCommand extends Command
     {
         // get the format argument
         $format = $this->argument('format');
+        $folderInput = $this->argument('folder');
+        $folderInput = trim($folderInput);
+        if(empty($folderInput)){
+            $folderInput = '';
+        }else{
+            // add / to the end of the folder name if not exist
+            if(substr($folderInput, -1) != '/'){
+                $folderInput .= '/';
+            }
+            // remove / from the start of the folder name if exist
+            if(substr($folderInput, 0, 1) == '/'){
+                $folderInput = substr($folderInput, 1);
+            }
+        }
         $ask = $this->option('ask');
         $test = $this->option('test');
         $this->info('Format: ' . $format);
@@ -50,7 +64,7 @@ class VueFileFormatCommand extends Command
             $this->error('Invalid format');
             return;
         }
-        $folder = base_path('resources/js/Components/ui/'); // specify the folder to search for vue files
+        $folder = base_path('resources/js/'.$folderInput); // specify the folder to search for vue files
         // get all files in the folder and subfolders
     
         $dir = new \RecursiveDirectoryIterator($folder);
