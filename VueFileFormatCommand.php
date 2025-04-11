@@ -4,6 +4,15 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
+/*
+* This command is used to format Vue files in the specified order.
+* The order is specified by the user in the format argument.
+* The format argument is a string of 3 characters, each character can be s,t,l
+* s: scripts, t: template, l: style
+* The command will search for all Vue files in the specified folder and format them in the specified order.
+* The command will ask for confirmation before updating the file.
+* The command will also run test function if --test option is passed.
+*/
 class VueFileFormatCommand extends Command
 {
     /**
@@ -11,7 +20,7 @@ class VueFileFormatCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'vue:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--test : for run test function} {folder? : the folder to search for vue files ,empty means start in root folder,resources/js/ is root folder} {--ask : ask before updating the file}';
+    protected $signature = 'vuejs:format {format : has 3 char(s,t,l) order of the file format s:scripts, t:template, l:style} {--test : for run test function} {folder? : the folder to search for vue files ,empty means start in root folder,resources/js/ is root folder} {--ask : ask before updating the file}';
     
    
     /**
